@@ -1,0 +1,100 @@
+:root {
+    --green: #2ecc71;
+    --dark-bg: #0a1a0f;
+    --text: #e0ffe0;
+}
+
+body {
+    margin: 0;
+    background-color: #050d08;
+    color: var(--text);
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    /* Prevents pull-to-refresh on mobile chrome */
+    overscroll-behavior-y: contain; 
+}
+
+.main-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+
+.game-container {
+    background: var(--dark-bg);
+    padding: 15px;
+    border-radius: 20px;
+    border: 3px solid var(--green);
+    box-shadow: 0 0 40px rgba(46, 204, 113, 0.15);
+    text-align: center;
+    position: relative;
+    width: 90%;
+    max-width: 620px;
+}
+
+.game-title { 
+    color: var(--green); 
+    margin: 5px 0; 
+    font-size: 2rem;
+    text-shadow: 0 0 15px var(--green); 
+}
+
+canvas {
+    background: #000;
+    border: 3px solid #111;
+    border-radius: 10px;
+    display: block;
+    margin: auto;
+    
+    /* MOBILE RESPONSIVENESS */
+    width: 100% !important;
+    height: auto !important;
+    max-width: 580px;
+    aspect-ratio: 1 / 1;
+    touch-action: none; /* Crucial for swipe controls */
+}
+
+.overlay {
+    display: none;
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 18px;
+}
+
+.overlay h1 { color: var(--green); font-size: 2.5rem; margin: 0; }
+
+.ui-layer { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
+
+.btn {
+    padding: 12px 25px;
+    border-radius: 50px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    background: var(--green);
+    color: black;
+    font-size: 1rem;
+}
+
+.pause-btn { background: #1e5131; color: white; }
+
+.instructions { margin-top: 10px; font-size: 0.9rem; color: var(--green); }
+
+.external-footer { margin-top: 5px; }
+.back-link {
+    color: var(--green);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+}
