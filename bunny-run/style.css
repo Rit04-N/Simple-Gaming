@@ -1,7 +1,13 @@
+/* --- 1. GLOBAL VARIABLES & RESET --- */
 :root {
     --pink: #ff4d6d;
     --dark-pink: #2b0a16;
     --text: #fff0f3;
+    --glow: rgba(255, 77, 109, 0.3);
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
@@ -9,35 +15,47 @@ body {
     padding: 0;
     background-color: #1a050a;
     color: var(--text);
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    overflow: hidden;
+    overflow: hidden; /* Prevents scrolling during gameplay */
 }
 
+/* --- 2. GAME LAYOUT --- */
 .game-container {
     background: var(--dark-pink);
     padding: 20px;
     border-radius: 20px;
     border: 2px solid var(--pink);
-    box-shadow: 0 0 30px rgba(255, 77, 109, 0.2);
+    box-shadow: 0 0 30px var(--glow);
     text-align: center;
     width: 95%;
     max-width: 650px;
-    position: relative; /* Required for Overlay */
+    position: relative; /* Essential for the Overlay positioning */
 }
 
-/* --- OVERLAY STYLES --- */
+/* --- 3. THE CANVAS (Game Window) --- */
+canvas {
+    background: linear-gradient(to bottom, #2b0a16, #4a192c);
+    border-radius: 10px;
+    width: 100%;
+    height: auto;
+    border-bottom: 4px solid var(--pink);
+    cursor: pointer;
+    display: block;
+}
+
+/* --- 4. GAME OVER OVERLAY --- */
 .overlay {
-    display: none; /* Hidden by default */
+    display: none; /* Controlled by JavaScript (flex) */
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(26, 5, 10, 0.9);
+    background: rgba(26, 5, 10, 0.95);
     z-index: 10;
     flex-direction: column;
     justify-content: center;
@@ -49,6 +67,7 @@ body {
     color: var(--pink);
     font-size: 3rem;
     margin: 0;
+    text-shadow: 0 0 10px var(--pink);
 }
 
 .overlay p {
@@ -56,15 +75,7 @@ body {
     margin: 10px 0;
 }
 
-canvas {
-    background: linear-gradient(to bottom, #2b0a16, #4a192c);
-    border-radius: 10px;
-    width: 100%;
-    height: auto;
-    border-bottom: 4px solid var(--pink);
-    cursor: pointer;
-}
-
+/* --- 5. BUTTONS & UI --- */
 .ui-layer {
     margin-top: 15px;
     display: flex;
@@ -78,16 +89,42 @@ canvas {
     border: none;
     font-weight: bold;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s, background 0.3s;
     color: white;
 }
 
-.start-btn { background: var(--pink); }
-.pause-btn { background: #880e4f; }
-.btn:active { transform: scale(0.9); }
+.start-btn { 
+    background: var(--pink); 
+}
 
+.start-btn:hover {
+    box-shadow: 0 0 15px var(--pink);
+}
+
+.pause-btn { 
+    background: #880e4f; 
+}
+
+.btn:active { 
+    transform: scale(0.9); 
+}
+
+/* --- 6. TEXT & INSTRUCTIONS --- */
 .instructions {
     margin-top: 15px;
     font-size: 0.85rem;
     color: #ffb3c1;
+    line-height: 1.4;
+}
+
+#scoreDisplay {
+    margin: 0 0 10px 0;
+    color: var(--pink);
+}
+
+/* --- 7. MOBILE OPTIMIZATION --- */
+@media (max-width: 480px) {
+    .overlay h1 { font-size: 2rem; }
+    .btn { padding: 10px 18px; font-size: 0.9rem; }
+    h1 { font-size: 1.8rem !important; } /* Adjusts the game title */
 }
