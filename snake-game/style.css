@@ -13,7 +13,6 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    /* Prevents pull-to-refresh on mobile chrome */
     overscroll-behavior-y: contain; 
 }
 
@@ -50,13 +49,11 @@ canvas {
     border-radius: 10px;
     display: block;
     margin: auto;
-    
-    /* MOBILE RESPONSIVENESS */
     width: 100% !important;
     height: auto !important;
     max-width: 580px;
     aspect-ratio: 1 / 1;
-    touch-action: none; /* Crucial for swipe controls */
+    touch-action: none; 
 }
 
 .overlay {
@@ -84,12 +81,45 @@ canvas {
     background: var(--green);
     color: black;
     font-size: 1rem;
+    /* Flexbox to center content */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 100px;
+    height: 44px;
 }
 
-.pause-btn { background: #1e5131; color: white; }
+/* --- NEW CSS ICON FOR PAUSE BUTTON --- */
+.pause-btn { 
+    background: #1e5131; 
+    color: white;
+    width: 60px; /* Fixed width for circle/oval look */
+    padding: 0;
+}
+
+.pause-btn::before {
+    content: '';
+    display: block;
+    width: 4px; 
+    height: 16px;
+    /* Draws two vertical lines using borders */
+    border-left: 4px solid white;
+    border-right: 4px solid white;
+    box-sizing: content-box;
+    padding: 0 3px; /* Space between lines */
+}
+
+/* Animation for visual feedback when shaking */
+@keyframes pulseRed {
+    0% { background-color: #1e5131; }
+    50% { background-color: #ff4d6d; }
+    100% { background-color: #1e5131; }
+}
+.shake-active {
+    animation: pulseRed 0.3s ease;
+}
 
 .instructions { margin-top: 10px; font-size: 0.9rem; color: var(--green); }
-
 .external-footer { margin-top: 5px; }
 .back-link {
     color: var(--green);
