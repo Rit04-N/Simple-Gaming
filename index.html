@@ -3,20 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bunny Love Runner</title>
+    
+    <meta name="description" content="Play Bunny Love Runner - A simple, fun browser game.">
+    <meta name="keywords" content="bunny game, simple online games, free browser games">
+    
+    <title>Bunny Love Runner | Play Online</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="game-wrapper">
-        <h2 id="scoreDisplay">Hearts: 0</h2>
-        <canvas id="gameCanvas" width="600" height="300"></canvas>
-        
-        <div class="controls">
-            <button class="btn" onclick="startGame()">Start Game</button>
-            <button class="btn btn-pause" onclick="pauseGame()">Pause</button>
+    <div class="game-container">
+        <div class="header">
+            <h2 id="scoreDisplay">Hearts: 0</h2>
         </div>
-        <p class="hint">Tap or Press Space to Jump (Double Jump allowed!)</p>
+
+        <canvas id="gameCanvas" width="600" height="300"></canvas>
+
+        <div class="ui-layer">
+            <button class="btn start-btn" onclick="startGame()">▶ Start / Restart</button>
+            <button class="btn pause-btn" onclick="pauseGame()">⏸ Pause</button>
+        </div>
+
+        <div class="instructions">
+            <p>Press <strong>Space</strong> or <strong>Tap</strong> to Jump</p>
+            <p>Double jump to reach high hearts! Avoid the cacti 🌵</p>
+        </div>
     </div>
 
     <script src="script.js"></script>
