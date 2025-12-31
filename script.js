@@ -13,16 +13,20 @@ const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
 
 function initAudio() {
+    // This creates the audio context only after a user click
     if (!audioCtx) {
         audioCtx = new AudioContext();
     }
+    // This wakes it up if the browser put it to sleep
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
 }
 
 function playSound(type) {
-    if (!audioCtx) return;
+    // If the user hasn't clicked 'Start' yet, audioCtx won't exist
+    if (!audioCtx || audioCtx.state === 'suspended') return;
+
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
     osc.connect(gainNode);
@@ -128,7 +132,7 @@ function updateGame() {
         if (checkCollision(player, hearts[i])) {
             hearts.splice(i, 1); 
             score++; 
-            playSound('collect'); // SOUND: Collect Heart
+            playSound('collect'); 
             document.getElementById("scoreDisplay").innerText = "Hearts: " + score;
         }
         if (hearts[i] && hearts[i].x < -50) hearts.splice(i, 1);
@@ -151,16 +155,16 @@ function jump() {
         player.dy = player.jumpPower; 
         player.grounded = false; 
         player.jumpCount = 1; 
-        playSound('jump'); // SOUND: Jump
+        playSound('jump'); 
     } else if (player.jumpCount === 1) { 
         player.dy = player.doubleJumpPower; 
         player.jumpCount = 2; 
-        playSound('jump'); // SOUND: Double Jump
+        playSound('jump'); 
     }
 }
 
 function startGame() {
-    initAudio(); // Initialize Audio on first click
+    initAudio(); // <--- THIS UNLOCKS SOUND ON CLICK
     if (gameRunning && !isPaused) return;
     if (isPaused) { isPaused = false; updateGame(); return; }
     
@@ -182,12 +186,13 @@ function pauseGame() {
         ctx.fillStyle = "white";
         ctx.fillText("PAUSED", canvas.width/2 - 50, canvas.height/2);
     } else {
+        initAudio(); // Also try to resume audio on unpause
         updateGame();
     }
 }
 
 function gameOver() {
-    playSound('gameover'); // SOUND: Death
+    playSound('gameover'); 
     gameRunning = false;
     cancelAnimationFrame(animationId);
     setTimeout(() => {
@@ -195,14 +200,15 @@ function gameOver() {
     }, 100);
 }
 
-// Input Listeners
 document.addEventListener("keydown", (e) => { 
     if (e.code === "Space") {
         e.preventDefault(); 
+        initAudio(); // Key press can also unlock audio
         jump();
     }
 });
 canvas.addEventListener("touchstart", (e) => { 
     e.preventDefault(); 
+    initAudio(); // Touch can also unlock audio
     jump(); 
 });
