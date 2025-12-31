@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let mamaDuck = { x: 200, y: 200, baseSpeed: 3, boostSpeed: 7 };
     let ducklings = [];
     let lostDuckling = { x: 100, y: 100 };
-    let history = []; // Path history for ducklings to follow
+    let history = []; 
     let nest = { x: 340, y: 60, size: 40 };
     let score = 0;
     let highScore = localStorage.getItem("duckRescueHighScore") || 0;
@@ -19,6 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Enemies
     let pikeFish = { x: -50, y: 150, speed: 2.2 };
     let crocodile = { x: 500, y: 300, speed: -1.0 };
+
+    // Joystick Variables
+    let joystick = { active: false, baseX: 0, baseY: 0, stickX: 0, stickY: 0, radius: 40 };
+    let lastTapTime = 0;
 
     // Update Initial UI
     document.getElementById("highScoreDisplay").innerText = highScore;
@@ -34,40 +38,61 @@ document.addEventListener("DOMContentLoaded", () => {
         if(e.code === "Space") isBoosting = false;
     });
 
-    // Mobile Swipe Logic
-    let touchStartX = null;
-    let touchStartY = null;
-
+    // Mobile Joystick & Double Tap Logic
     canvas.addEventListener("touchstart", (e) => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        
-        // Tap Swan for Boost Check
+        e.preventDefault();
         const rect = canvas.getBoundingClientRect();
-        let tx = (touchStartX - rect.left) * (canvas.width / rect.width);
-        let ty = (touchStartY - rect.top) * (canvas.height / rect.height);
-        if(Math.hypot(mamaDuck.x - tx, mamaDuck.y - ty) < 50) isBoosting = true;
+        const touch = e.touches[0];
+        const tx = (touch.clientX - rect.left) * (canvas.width / rect.width);
+        const ty = (touch.clientY - rect.top) * (canvas.height / rect.height);
+
+        // Double Tap Detection for Boost
+        const currentTime = Date.now();
+        const tapLength = currentTime - lastTapTime;
+        if (tapLength < 300 && tapLength > 0) {
+            isBoosting = true;
+        }
+        lastTapTime = currentTime;
+
+        // Joystick Initialization
+        joystick.active = true;
+        joystick.baseX = tx;
+        joystick.baseY = ty;
+        joystick.stickX = tx;
+        joystick.stickY = ty;
     }, {passive: false});
 
     canvas.addEventListener("touchmove", (e) => {
-        if (!touchStartX || !touchStartY) return;
         e.preventDefault();
-        let touchEndX = e.touches[0].clientX;
-        let touchEndY = e.touches[0].clientY;
-        
-        keys["ArrowLeft"] = touchEndX < touchStartX - 20;
-        keys["ArrowRight"] = touchEndX > touchStartX + 20;
-        keys["ArrowUp"] = touchEndY < touchStartY - 20;
-        keys["ArrowDown"] = touchEndY > touchStartY + 20;
+        if (!joystick.active) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const tx = (touch.clientX - rect.left) * (canvas.width / rect.width);
+        const ty = (touch.clientY - rect.top) * (canvas.height / rect.height);
+
+        // Calculate Joystick Movement
+        const dist = Math.hypot(tx - joystick.baseX, ty - joystick.baseY);
+        const angle = Math.atan2(ty - joystick.baseY, tx - joystick.baseX);
+        const moveDist = Math.min(dist, joystick.radius);
+
+        joystick.stickX = joystick.baseX + Math.cos(angle) * moveDist;
+        joystick.stickY = joystick.baseY + Math.sin(angle) * moveDist;
+
+        // Map Joystick to Movement Keys
+        const threshold = 10;
+        keys["ArrowLeft"] = (tx < joystick.baseX - threshold);
+        keys["ArrowRight"] = (tx > joystick.baseX + threshold);
+        keys["ArrowUp"] = (ty < joystick.baseY - threshold);
+        keys["ArrowDown"] = (ty > joystick.baseY + threshold);
     }, {passive: false});
 
     canvas.addEventListener("touchend", () => { 
+        joystick.active = false;
         isBoosting = false; 
         keys = {}; 
-        touchStartX = null; touchStartY = null; 
     });
 
-    // Global UI Functions attached to window for HTML buttons
     window.togglePause = function() {
         isPaused = !isPaused;
         const overlay = document.getElementById("statusOverlay");
@@ -79,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     window.quack = function() { 
-        pikeFish.x = -150; // Scares the fish away temporarily
+        pikeFish.x = -150; 
     };
 
     function spawnBaby() {
@@ -87,11 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
         lostDuckling.y = 40 + Math.random() * 320;
     }
 
-    // --- ENGINE ---
     function update() {
         if (isPaused) return;
 
-        // Boost/Stamina Logic
         let currentSpeed = (isBoosting && boostStamina > 0) ? mamaDuck.boostSpeed : mamaDuck.baseSpeed;
         if (isBoosting && boostStamina > 0) {
             boostStamina -= 1.5;
@@ -101,34 +124,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         document.getElementById("boostBar").style.width = boostStamina + "%";
 
-        // Movement
         if (keys["ArrowUp"] || keys["KeyW"]) mamaDuck.y -= currentSpeed;
         if (keys["ArrowDown"] || keys["KeyS"]) mamaDuck.y += currentSpeed;
         if (keys["ArrowLeft"] || keys["KeyA"]) mamaDuck.x -= currentSpeed;
         if (keys["ArrowRight"] || keys["KeyD"]) mamaDuck.x += currentSpeed;
 
-        // Boundary Clamp
         mamaDuck.x = Math.max(20, Math.min(380, mamaDuck.x));
         mamaDuck.y = Math.max(20, Math.min(380, mamaDuck.y));
 
-        // Record History for Trail
         history.unshift({x: mamaDuck.x, y: mamaDuck.y});
         if (history.length > 200) history.pop();
 
-        // Enemy AI
         pikeFish.x += pikeFish.speed;
         if (pikeFish.x > 450) { pikeFish.x = -50; pikeFish.y = 50 + Math.random() * 300; }
         crocodile.x += crocodile.speed;
         if (crocodile.x < -100) { crocodile.x = 500; crocodile.y = 50 + Math.random() * 300; }
 
-        // Pick up Baby
         if (Math.hypot(mamaDuck.x - lostDuckling.x, mamaDuck.y - lostDuckling.y) < 25) {
             ducklings.push({});
             spawnBaby();
             document.getElementById("trailDisplay").innerText = ducklings.length;
         }
 
-        // Deliver to Nest
         if (Math.hypot(mamaDuck.x - nest.x, mamaDuck.y - nest.y) < nest.size && ducklings.length > 0) {
             score += ducklings.length;
             ducklings = [];
@@ -141,7 +158,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // Pike Fish Line Break Logic
         ducklings.forEach((d, i) => {
             let idx = (i + 1) * 15;
             if (history[idx] && Math.hypot(history[idx].x - pikeFish.x, history[idx].y - pikeFish.y) < 20) {
@@ -153,28 +169,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function draw() {
         ctx.clearRect(0, 0, 400, 400);
-
-        // Draw Nest
+        
         ctx.font = "45px serif";
         ctx.textAlign = "center";
         ctx.fillText("🪺", nest.x, nest.y + 15); 
 
-        // Draw Enemies
         ctx.font = "30px serif";
         ctx.fillText("🐟", pikeFish.x, pikeFish.y); 
         ctx.font = "45px serif";
         ctx.fillText("🐊", crocodile.x, crocodile.y); 
 
-        // Draw Mama Swan
         ctx.save();
         ctx.translate(mamaDuck.x, mamaDuck.y);
         if (keys["ArrowLeft"] || keys["KeyA"]) ctx.scale(-1, 1);
         if (isBoosting) { ctx.shadowBlur = 15; ctx.shadowColor = "white"; }
         ctx.font = "40px serif";
-        ctx.fillText("🦢", 0, 15);
+        ctx.fillText("Sw", 0, 15);
         ctx.restore();
 
-        // Draw Duckling Trail
         ducklings.forEach((d, i) => {
             let idx = (i + 1) * 15;
             if (history[idx]) {
@@ -184,17 +196,23 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
         
-        // Draw the Lost Baby
         ctx.font = "24px serif";
         ctx.fillText("🐣", lostDuckling.x, lostDuckling.y + 10); 
+
+        // Draw Joystick UI
+        if (joystick.active) {
+            ctx.beginPath();
+            ctx.arc(joystick.baseX, joystick.baseY, joystick.radius, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(joystick.stickX, joystick.stickY, 20, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.fill();
+        }
     }
 
-    function loop() {
-        update();
-        draw();
-        requestAnimationFrame(loop);
-    }
-    
+    function loop() { update(); draw(); requestAnimationFrame(loop); }
     spawnBaby();
     loop();
 });
