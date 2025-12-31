@@ -1,50 +1,55 @@
 /* --- 1. GLOBAL VARIABLES & RESET --- */
 :root {
-    --pond-bg: #2980b9;      /* Darker Blue for Container */
-    --water-bg: #3498db;     /* Lighter Blue for Canvas */
-    --accent: #f1c40f;       /* Yellow/Gold for Text */
-    --danger: #e74c3c;       /* Red for Hearts/Warning */
-    --nest-green: #2ecc71;   /* Green for Start Button/Nest */
+    --pond-bg: #2980b9;      
+    --water-bg: #3498db;     
+    --accent: #f1c40f;       
+    --danger: #e74c3c;       
+    --nest-green: #2ecc71;   
     --text-white: #ffffff;
-    --ui-bg: rgba(0, 0, 0, 0.25); /* Semi-transparent background for stats */
+    --ui-bg: rgba(0, 0, 0, 0.4);
 }
 
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
     padding: 0;
-    background-color: #050d08; /* Very dark background for the page */
+    background-color: #050d08;
     color: var(--text-white);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Changed from center to allow scrolling */
     min-height: 100vh;
-    overflow: hidden;
-    /* Critical for mobile: stops the page from scrolling while playing */
-    touch-action: none; 
+    /* ALLOW scrolling on body now */
+    overflow-y: auto; 
 }
 
 /* --- 2. GAME CONTAINER --- */
+.main-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0; /* Add space for scrolling */
+}
+
 .game-container {
     background: var(--pond-bg);
-    padding: 20px;
+    padding: 15px;
     border-radius: 20px;
     border: 4px solid white;
     text-align: center;
     position: relative;
     width: 95%;
-    max-width: 450px; /* Limits size on big screens */
+    max-width: 450px;
     box-shadow: 0 10px 50px rgba(0, 0, 0, 0.6);
 }
 
 .game-title { 
     color: var(--accent); 
-    margin: 5px 0 15px 0; 
-    text-shadow: 2px 2px 0px #000; 
+    margin: 5px 0 10px 0; 
+    text-shadow: 3px 3px 0px #000; 
     font-size: 2rem; 
     letter-spacing: 2px;
 }
@@ -57,35 +62,24 @@ body {
     margin-bottom: 8px;
     font-weight: bold;
     background: var(--ui-bg);
-    padding: 10px;
+    padding: 8px;
     border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-.stat-box span { 
-    color: var(--accent); 
-    font-size: 1.1rem;
-}
-
-.lives-box span { 
-    color: var(--danger); 
-    font-size: 1.3rem; 
-    letter-spacing: 3px; 
-    text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
-}
-
-.death-box span { 
-    color: #bdc3c7; /* Light Gray */
-}
+.stat-box span { color: var(--accent); font-size: 1.1rem; }
+.lives-box span { color: var(--danger); font-size: 1.3rem; letter-spacing: 3px; text-shadow: 0 0 5px rgba(231, 76, 60, 0.5); }
+.death-box span { color: #ecf0f1; } 
 
 /* --- 4. BOOST STAMINA BAR --- */
 .boost-container {
     width: 100%;
     height: 10px;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
     border-radius: 5px;
     margin-bottom: 12px;
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
 #boostBar {
@@ -95,7 +89,7 @@ body {
     transition: width 0.1s linear;
 }
 
-/* --- 5. THE CANVAS (GAME WINDOW) --- */
+/* --- 5. THE CANVAS --- */
 canvas {
     background: var(--water-bg);
     display: block;
@@ -103,26 +97,26 @@ canvas {
     border-radius: 15px;
     width: 100%;
     height: auto;
-    aspect-ratio: 1 / 1; /* Keeps it square responsive */
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.3);
+    aspect-ratio: 1 / 1;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.4);
     cursor: crosshair;
-    border-bottom: 4px solid rgba(0,0,0,0.2);
+    border-bottom: 4px solid rgba(0,0,0,0.3);
+    
+    /* CRITICAL: Only stop scrolling on the game board itself */
+    touch-action: none; 
 }
 
-/* --- 6. OVERLAY (PAUSE / GAME OVER) --- */
+/* --- 6. OVERLAY --- */
 .overlay {
     position: absolute;
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%;
-    background: rgba(15, 15, 20, 0.95);
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 15, 20, 0.96);
     z-index: 20;
-    display: flex; /* Script toggles this to 'none' */
+    display: flex; 
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    border-radius: 16px; /* Matches container radius minus border */
+    border-radius: 16px;
     backdrop-filter: blur(5px);
 }
 
@@ -133,16 +127,10 @@ canvas {
     text-transform: uppercase;
 }
 
-.overlay p {
-    font-size: 1.2rem;
-    margin: 5px 0;
-    color: #ecf0f1;
-}
+.overlay p { font-size: 1.2rem; margin: 5px 0; color: #ecf0f1; }
 
 /* --- 7. BUTTONS --- */
-.ui-layer { 
-    margin-top: 20px; 
-}
+.ui-layer { margin-top: 15px; }
 
 .btn {
     padding: 15px 30px;
@@ -153,23 +141,16 @@ canvas {
     text-transform: uppercase;
     color: white;
     font-size: 1rem;
-    transition: transform 0.1s, box-shadow 0.2s;
+    transition: transform 0.1s;
 }
 
-.btn:active { 
-    transform: scale(0.95); 
-}
+.btn:active { transform: scale(0.95); }
 
 .start-btn { 
     background: var(--nest-green); 
     box-shadow: 0 5px 0 #27ae60;
     margin-top: 20px;
     font-size: 1.2rem;
-}
-
-.start-btn:hover {
-    background: #2ecc71;
-    box-shadow: 0 0 15px rgba(46, 204, 113, 0.6);
 }
 
 .pause-btn { 
@@ -181,25 +162,37 @@ canvas {
 
 /* --- 8. FOOTER & INSTRUCTIONS --- */
 .instructions {
-    margin-top: 20px;
-    font-size: 0.85rem;
-    opacity: 0.9;
+    margin-top: 20px; /* Space added so it is clearly separated */
+    font-size: 0.9rem;
+    opacity: 0.95;
     line-height: 1.6;
-    background: rgba(0,0,0,0.2);
-    padding: 10px;
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
     border-radius: 10px;
+    text-align: left; /* Easier to read instructions */
 }
 
 .back-link {
     color: var(--accent);
     text-decoration: none;
-    margin-top: 25px;
+    margin-top: 20px;
     display: block;
     opacity: 0.8;
     font-weight: bold;
-    transition: opacity 0.2s;
 }
 
-.back-link:hover {
-    opacity: 1;
+/* --- MOBILE OPTIMIZATIONS --- */
+@media (max-width: 600px) {
+    .game-container {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    /* HIDE THE PAUSE ICON (Emoji) ON MOBILE ONLY */
+    .pause-icon {
+        display: none;
+    }
 }
