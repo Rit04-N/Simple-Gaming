@@ -1,114 +1,78 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-const box = 20; // Size of one grid square
-let snake = [];
-let food = {};
-let direction = "RIGHT";
-let gameInterval;
-let score = 0;
-let highScore = localStorage.getItem("snakeHighScore") || 0;
-
-// Audio context
-const AudioContext = window.AudioContext || window.webkitAudioContext;
-let audioCtx;
-function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); }
-
-function playSound(freq, type) {
-    if (!audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+:root {
+    --green: #2ecc71;
+    --dark-bg: #0a1a0f;
+    --text: #e0ffe0;
 }
 
-function startGame() {
-    initAudio();
-    document.getElementById("gameOverOverlay").style.display = "none";
-    score = 0;
-    direction = "RIGHT";
-    snake = [{ x: 10 * box, y: 10 * box }]; // Start in middle
-    spawnFood();
-    if (gameInterval) clearInterval(gameInterval);
-    gameInterval = setInterval(draw, 100); // 100ms = Game Speed
+body {
+    margin: 0;
+    background-color: #050d08;
+    color: var(--text);
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
-function spawnFood() {
-    food = {
-        x: Math.floor(Math.random() * 19 + 1) * box,
-        y: Math.floor(Math.random() * 19 + 1) * box
-    };
+.game-container {
+    background: var(--dark-bg);
+    padding: 20px;
+    border-radius: 20px;
+    border: 3px solid var(--green);
+    box-shadow: 0 0 40px rgba(46, 204, 113, 0.15);
+    text-align: center;
+    position: relative;
 }
 
-document.addEventListener("keydown", changeDirection);
-
-function changeDirection(event) {
-    if (event.keyCode == 37 && direction != "RIGHT") direction = "LEFT";
-    else if (event.keyCode == 38 && direction != "DOWN") direction = "UP";
-    else if (event.keyCode == 39 && direction != "LEFT") direction = "RIGHT";
-    else if (event.keyCode == 40 && direction != "UP") direction = "DOWN";
+.game-title { 
+    color: var(--green); 
+    margin: 0 0 10px 0; 
+    font-size: 2.5rem;
+    text-shadow: 0 0 15px var(--green); 
 }
 
-function draw() {
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    for (let i = 0; i < snake.length; i++) {
-        ctx.fillStyle = i == 0 ? "#2ecc71" : "#27ae60"; // Head is brighter
-        ctx.fillRect(snake[i].x, snake[i].y, box, box);
-        ctx.strokeStyle = "black";
-        ctx.strokeRect(snake[i].x, snake[i].y, box, box);
-    }
-
-    ctx.fillStyle = "#e74c3c"; // Red food
-    ctx.fillRect(food.x, food.y, box, box);
-
-    let snakeX = snake[0].x;
-    let snakeY = snake[0].y;
-
-    if (direction == "LEFT") snakeX -= box;
-    if (direction == "UP") snakeY -= box;
-    if (direction == "RIGHT") snakeX += box;
-    if (direction == "DOWN") snakeY += box;
-
-    // Eat Food Logic
-    if (snakeX == food.x && snakeY == food.y) {
-        score++;
-        playSound(400, "sine");
-        document.getElementById("scoreDisplay").innerText = "Apples: " + score;
-        spawnFood();
-    } else {
-        snake.pop(); // Remove tail
-    }
-
-    let newHead = { x: snakeX, y: snakeY };
-
-    // Game Over Logic
-    if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
-        clearInterval(gameInterval);
-        playSound(150, "sawtooth");
-        showGameOver();
-    }
-
-    snake.unshift(newHead);
+canvas {
+    background: #000;
+    border: 5px solid #111;
+    border-radius: 10px;
+    display: block;
+    margin: auto;
+    box-shadow: inset 0 0 20px rgba(0,255,0,0.05);
 }
 
-function collision(head, array) {
-    for (let i = 0; i < array.length; i++) {
-        if (head.x == array[i].x && head.y == array[i].y) return true;
-    }
-    return false;
+.overlay {
+    display: none;
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 10;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 18px;
 }
 
-function showGameOver() {
-    if (score > highScore) {
-        highScore = score;
-        localStorage.setItem("snakeHighScore", highScore);
-    }
-    document.getElementById("finalScoreText").innerText = "Apples Eaten: " + score;
-    document.getElementById("highScoreText").innerText = "High Score: " + highScore;
-    document.getElementById("gameOverOverlay").style.display = "flex";
+.btn {
+    padding: 15px 35px;
+    border-radius: 50px;
+    border: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    background: var(--green);
+    color: black;
+    margin-top: 15px;
+    transition: transform 0.2s;
 }
+
+.btn:hover { transform: scale(1.05); }
+
+.footer-links { margin-top: 20px; }
+.back-link { 
+    color: var(--green); 
+    text-decoration: none; 
+    font-weight: bold;
+    opacity: 0.8;
+}
+.back-link:hover { opacity: 1; }
