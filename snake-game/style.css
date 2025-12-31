@@ -1,4 +1,19 @@
-/* ... keep your existing root and body styles ... */
+:root {
+    --green: #2ecc71;
+    --dark-bg: #0a1a0f;
+    --text: #e0ffe0;
+}
+
+body {
+    margin: 0;
+    background-color: #050d08;
+    color: var(--text);
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
 
 .main-wrapper {
     display: flex;
@@ -7,27 +22,64 @@
     gap: 20px;
 }
 
-.pause-btn {
-    background: #1e5131; /* Darker green for pause */
-    color: white;
+.game-container {
+    background: var(--dark-bg);
+    padding: 20px;
+    border-radius: 20px;
+    border: 3px solid var(--green);
+    box-shadow: 0 0 40px rgba(46, 204, 113, 0.15);
+    text-align: center;
+    position: relative;
 }
 
-.external-footer {
-    margin-top: 10px;
+.game-title { 
+    color: var(--green); 
+    margin: 0 0 10px 0; 
+    font-size: 2.5rem;
+    text-shadow: 0 0 15px var(--green); 
 }
 
+canvas {
+    background: #000;
+    border: 5px solid #111;
+    border-radius: 10px;
+    display: block;
+    margin: auto;
+}
+
+.overlay {
+    display: none;
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 18px;
+}
+
+.overlay h1 { color: var(--green); font-size: 3rem; margin: 0; }
+
+.ui-layer { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
+
+.btn {
+    padding: 12px 25px;
+    border-radius: 50px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    background: var(--green);
+    color: black;
+}
+
+.pause-btn { background: #1e5131; color: white; }
+
+.external-footer { margin-top: 10px; }
 .back-link {
     color: var(--green);
     text-decoration: none;
     font-weight: bold;
     font-size: 1.1rem;
-    transition: opacity 0.3s;
     text-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
 }
-
-.back-link:hover {
-    opacity: 0.7;
-    text-decoration: underline;
-}
-
-/* ... keep the rest of your existing CSS ... */
