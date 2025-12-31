@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Gaming Hub</title>
+    <style>
+        body { background: #1a050a; color: white; text-align: center; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 50px; }
+        h1 { color: #ff4d6d; text-shadow: 0 0 20px rgba(255, 77, 109, 0.5); font-size: 3rem; }
+        .grid { display: flex; justify-content: center; gap: 30px; margin-top: 50px; flex-wrap: wrap; }
+        
+        .card { 
+            border: 2px solid #ff4d6d; padding: 40px; border-radius: 20px; 
+            text-decoration: none; color: white; transition: 0.3s; width: 250px;
+            background: rgba(255, 77, 109, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Snake Card specific styling (Green theme) */
+        .snake-card { border-color: #2ecc71; background: rgba(46, 204, 113, 0.05); }
+        .snake-card:hover { background: #2ecc71; color: black; border-color: #2ecc71; }
+
+        .card:hover { background: #ff4d6d; transform: translateY(-10px); color: black; }
+        .card h2 { margin: 10px 0; }
+        .card p { font-size: 0.9rem; opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <h1>MY SCRATCH GAMING HUB</h1>
+    <div class="grid">
+        
+        <a href="bunny-run/index.html" class="card">
+            <span style="font-size: 3rem;">🐰</span>
+            <h2>Bunny Run</h2>
+            <p>Collect hearts and avoid the cacti!</p>
+        </a>
+
+        <a href="snake-game/index.html" class="card snake-card">
+            <span style="font-size: 3rem;">🐍</span>
+            <h2>Retro Snake</h2>
+            <p>Eat the apples and grow as long as you can!</p>
+        </a>
+
+    </div>
+</body>
+</html>
