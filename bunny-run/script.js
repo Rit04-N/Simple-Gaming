@@ -5,14 +5,13 @@ const ctx = canvas.getContext("2d");
 let gameRunning = false;
 let isPaused = false;
 let score = 0;
-// Retrieves high score from the user's browser memory
 let highScore = localStorage.getItem("bunnyHighScore") || 0;
 let animationId;
 let frame = 0;
 
 const GROUND_Y = 220;
 
-// --- 2. AUDIO ENGINE (Synthesizes 8-bit sounds) ---
+// --- 2. AUDIO ENGINE (Synthesized 8-bit sounds) ---
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
 
@@ -32,22 +31,37 @@ function playSound(type) {
         osc.type = 'square';
         osc.frequency.setValueAtTime(150, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1);
-        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        
+        // --- BALANCED VOLUME ---
+        // Reduced from 0.1 to 0.03 (much quieter)
+        gainNode.gain.setValueAtTime(0.03, audioCtx.currentTime); 
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08); 
     } 
     else if (type === 'collect') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(600, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.1);
+        
+        // Heart sound remains at 0.1 to stay clear
         gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.2);
     }
     else if (type === 'gameover') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(300, audioCtx.currentTime);
         osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.5);
         gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
     }
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.5);
 }
 
 // --- 3. PLAYER SETTINGS ---
@@ -65,7 +79,6 @@ function updateGame() {
     if (!gameRunning || isPaused) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Handle Gravity
     player.dy += player.gravity; 
     player.y += player.dy;
 
@@ -76,7 +89,6 @@ function updateGame() {
         player.jumpCount = 0; 
     }
     
-    // Spawn Objects every 90 frames
     if (frame % 90 === 0) {
         if (Math.random() < 0.3) {
             obstacles.push({ x: canvas.width, y: GROUND_Y + 10, width: 20, height: 30 });
@@ -85,11 +97,9 @@ function updateGame() {
         }
     }
 
-    // Draw Bunny
     ctx.font = "40px Arial"; 
     ctx.fillText("🐰", player.x, player.y + 40);
     
-    // Move and Draw Obstacles (Cacti)
     ctx.font = "30px Arial";
     for (let i = obstacles.length - 1; i >= 0; i--) {
         obstacles[i].x -= 5;
@@ -98,7 +108,6 @@ function updateGame() {
         if (obstacles[i] && obstacles[i].x < -50) obstacles.splice(i, 1);
     }
 
-    // Move and Draw Collectibles (Hearts)
     for (let i = hearts.length - 1; i >= 0; i--) {
         hearts[i].x -= 5; 
         ctx.fillText("💖", hearts[i].x, hearts[i].y + 30);
