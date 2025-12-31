@@ -1,136 +1,46 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-const box = 20; 
-let snake = [];
-let food = {};
-let direction = "RIGHT";
-let nextDirection = "RIGHT";
-let gameInterval;
-let score = 0;
-let highScore = localStorage.getItem("snakeHighScore") || 0;
-let isPaused = false;
-
-const AudioContext = window.AudioContext || window.webkitAudioContext;
-let audioCtx;
-function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); }
-
-function playSound(freq, type) {
-    if (!audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-}
-
-function togglePause() {
-    if (snake.length === 0) return;
-    isPaused = !isPaused;
-    if (isPaused) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "white";
-        ctx.font = "40px Arial";
-        ctx.fillText("PAUSED", canvas.width / 2 - 80, canvas.height / 2);
-    }
-}
-
-function startGame() {
-    initAudio();
-    isPaused = false;
-    document.getElementById("gameOverOverlay").style.display = "none";
-    score = 0;
-    document.getElementById("scoreDisplay").innerText = "Apples: 0";
-    direction = "RIGHT";
-    nextDirection = "RIGHT";
-    snake = [
-        { x: 15 * box, y: 15 * box },
-        { x: 14 * box, y: 15 * box },
-        { x: 13 * box, y: 15 * box }
-    ]; 
-    spawnFood();
-    if (gameInterval) clearInterval(gameInterval);
-    gameInterval = setInterval(draw, 150); 
-}
-
-function spawnFood() {
-    food = {
-        x: Math.floor(Math.random() * 29) * box,
-        y: Math.floor(Math.random() * 29) * box
-    };
-}
-
-document.addEventListener("keydown", (e) => {
-    if (e.code === "Space") { e.preventDefault(); togglePause(); }
-    if (isPaused) return;
-    if (e.keyCode == 37 && direction != "RIGHT") nextDirection = "LEFT";
-    else if (e.keyCode == 38 && direction != "DOWN") nextDirection = "UP";
-    else if (e.keyCode == 39 && direction != "LEFT") nextDirection = "RIGHT";
-    else if (e.keyCode == 40 && direction != "UP") nextDirection = "DOWN";
-});
-
 function drawSnakePart(part, index) {
     const isHead = index === 0;
+    
+    // 1. Draw the Body Part
     ctx.fillStyle = isHead ? "#2ecc71" : "#27ae60";
     ctx.beginPath();
+    // Head is slightly rounder (10px) than the body (6px)
     ctx.roundRect(part.x + 1, part.y + 1, box - 2, box - 2, isHead ? 10 : 6);
     ctx.fill();
-}
 
-function draw() {
-    if (isPaused) return;
-    direction = nextDirection;
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    snake.forEach((part, index) => drawSnakePart(part, index));
-    ctx.fillStyle = "#ff4d6d";
-    ctx.beginPath();
-    ctx.arc(food.x + box/2, food.y + box/2, box/2 - 2, 0, Math.PI * 2);
-    ctx.fill();
+    // 2. Draw the Eyes (Only on the head)
+    if (isHead) {
+        ctx.fillStyle = "white";
+        let eyeSize = 3;
+        let offset = 5; // Distance from the edge
 
-    let snakeX = snake[0].x;
-    let snakeY = snake[0].y;
-    if (direction == "LEFT") snakeX -= box;
-    if (direction == "UP") snakeY -= box;
-    if (direction == "RIGHT") snakeX += box;
-    if (direction == "DOWN") snakeY += box;
+        // Position eyes based on direction
+        if (direction === "UP" || direction === "DOWN") {
+            // Horizontal eyes for vertical movement
+            ctx.beginPath();
+            ctx.arc(part.x + 7, part.y + 10, eyeSize, 0, Math.PI * 2); // Left eye
+            ctx.arc(part.x + 13, part.y + 10, eyeSize, 0, Math.PI * 2); // Right eye
+            ctx.fill();
+            
+            // Add tiny black pupils
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(part.x + 7, direction === "UP" ? part.y + 8 : part.y + 12, 1.5, 0, Math.PI * 2);
+            ctx.arc(part.x + 13, direction === "UP" ? part.y + 8 : part.y + 12, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            // Vertical eyes for horizontal movement
+            ctx.beginPath();
+            ctx.arc(part.x + 10, part.y + 7, eyeSize, 0, Math.PI * 2); // Top eye
+            ctx.arc(part.x + 10, part.y + 13, eyeSize, 0, Math.PI * 2); // Bottom eye
+            ctx.fill();
 
-    if (snakeX == food.x && snakeY == food.y) {
-        score++;
-        playSound(400, "sine");
-        document.getElementById("scoreDisplay").innerText = "Apples: " + score;
-        spawnFood();
-    } else {
-        snake.pop(); 
+            // Add tiny black pupils
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(direction === "LEFT" ? part.x + 8 : part.x + 12, part.y + 7, 1.5, 0, Math.PI * 2);
+            ctx.arc(direction === "LEFT" ? part.x + 8 : part.x + 12, part.y + 13, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
-
-    let newHead = { x: snakeX, y: snakeY };
-
-    if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
-        clearInterval(gameInterval);
-        playSound(150, "sawtooth");
-        showGameOver(); // Calls custom overlay, NO MORE ALERT
-        return;
-    }
-    snake.unshift(newHead);
-}
-
-function collision(head, array) {
-    for (let i = 0; i < array.length; i++) {
-        if (head.x == array[i].x && head.y == array[i].y) return true;
-    }
-    return false;
-}
-
-function showGameOver() {
-    if (score > highScore) {
-        highScore = score;
-        localStorage.setItem("snakeHighScore", highScore);
-    }
-    document.getElementById("finalScoreText").innerText = "Apples Eaten: " + score;
-    document.getElementById("highScoreText").innerText = "High Score: " + highScore;
-    document.getElementById("gameOverOverlay").style.display = "flex";
 }
