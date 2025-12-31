@@ -9,7 +9,7 @@ let nextDirection = "RIGHT";
 let gameInterval;
 let score = 0;
 let highScore = localStorage.getItem("snakeHighScore") || 0;
-let isPaused = false; // NEW: Pause state
+let isPaused = false;
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
@@ -26,9 +26,8 @@ function playSound(freq, type) {
     osc.start(); osc.stop(audioCtx.currentTime + 0.1);
 }
 
-// NEW: Toggle Pause Function
 function togglePause() {
-    if (snake.length === 0) return; // Don't pause if game hasn't started
+    if (snake.length === 0) return;
     isPaused = !isPaused;
     if (isPaused) {
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
@@ -41,7 +40,7 @@ function togglePause() {
 
 function startGame() {
     initAudio();
-    isPaused = false; // Reset pause state
+    isPaused = false;
     document.getElementById("gameOverOverlay").style.display = "none";
     score = 0;
     document.getElementById("scoreDisplay").innerText = "Apples: 0";
@@ -65,12 +64,8 @@ function spawnFood() {
 }
 
 document.addEventListener("keydown", (e) => {
-    // Space bar to pause
-    if (e.code === "Space") {
-        e.preventDefault();
-        togglePause();
-    }
-    if (isPaused) return; // Prevent turning while paused
+    if (e.code === "Space") { e.preventDefault(); togglePause(); }
+    if (isPaused) return;
     if (e.keyCode == 37 && direction != "RIGHT") nextDirection = "LEFT";
     else if (e.keyCode == 38 && direction != "DOWN") nextDirection = "UP";
     else if (e.keyCode == 39 && direction != "LEFT") nextDirection = "RIGHT";
@@ -79,34 +74,18 @@ document.addEventListener("keydown", (e) => {
 
 function drawSnakePart(part, index) {
     const isHead = index === 0;
-    const radius = isHead ? 10 : 6;
     ctx.fillStyle = isHead ? "#2ecc71" : "#27ae60";
     ctx.beginPath();
-    ctx.roundRect(part.x + 1, part.y + 1, box - 2, box - 2, radius);
+    ctx.roundRect(part.x + 1, part.y + 1, box - 2, box - 2, isHead ? 10 : 6);
     ctx.fill();
-
-    if (isHead) {
-        ctx.fillStyle = "white";
-        if (direction === "UP" || direction === "DOWN") {
-            ctx.beginPath(); ctx.arc(part.x + 6, part.y + 10, 3, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.arc(part.x + 14, part.y + 10, 3, 0, Math.PI * 2); ctx.fill();
-        } else {
-            ctx.beginPath(); ctx.arc(part.x + 10, part.y + 6, 3, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.arc(part.x + 10, part.y + 14, 3, 0, Math.PI * 2); ctx.fill();
-        }
-    }
 }
 
 function draw() {
-    if (isPaused) return; // STOP DRAWING/MOVING IF PAUSED
-
+    if (isPaused) return;
     direction = nextDirection;
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     snake.forEach((part, index) => drawSnakePart(part, index));
-
-    // Draw Apple
     ctx.fillStyle = "#ff4d6d";
     ctx.beginPath();
     ctx.arc(food.x + box/2, food.y + box/2, box/2 - 2, 0, Math.PI * 2);
@@ -114,7 +93,6 @@ function draw() {
 
     let snakeX = snake[0].x;
     let snakeY = snake[0].y;
-
     if (direction == "LEFT") snakeX -= box;
     if (direction == "UP") snakeY -= box;
     if (direction == "RIGHT") snakeX += box;
@@ -134,10 +112,9 @@ function draw() {
     if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
         clearInterval(gameInterval);
         playSound(150, "sawtooth");
-        showGameOver();
+        showGameOver(); // Calls custom overlay, NO MORE ALERT
         return;
     }
-
     snake.unshift(newHead);
 }
 
