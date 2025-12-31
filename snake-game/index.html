@@ -3,472 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Retro Snake | Play Online</title>
+    <title>Retro Snake</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐍</text></svg>">
     
     <style>
-        /* --- 1. GLOBAL STYLES --- */
+        /* --- 1. THEME: RETRO GREEN & DARK --- */
         :root {
-            --green: #2ecc71;
-            --dark-green: #27ae60;
-            --bg-dark: #0a1a0f;
-            --panel-bg: #0f2b1a;
-            --text: #e0ffe0;
+            --bg-dark: #050d08;      /* Very dark green/black */
+            --bg-panel: #0a1a0f;     /* Slightly lighter panel */
+            --snake-green: #2ecc71;  /* The Bright Green */
+            --snake-dark: #27ae60;   /* Darker Green for body */
+            --apple-red: #e74c3c;    /* Classic Apple Red */
+            --text-main: #e0ffe0;    /* Pale Green Text */
         }
 
         body {
             margin: 0;
-            background-color: #050d08;
-            color: var(--text);
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            touch-action: none; /* Prevents browser zooming/scrolling on mobile */
+            touch-action: none; /* Stops scrolling */
             overflow-x: hidden;
-            padding-bottom: 50px;
+            padding-bottom: 20px;
         }
 
-        /* --- 2. GAME CONTAINER --- */
+        h1 {
+            color: var(--snake-green);
+            text-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+            margin: 15px 0 5px 0;
+            font-size: 2.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* --- 2. GAME BOARD --- */
         .game-wrapper {
-            margin-top: 20px;
-            width: 100%;
-            max-width: 600px;
+            position: relative;
+            padding: 10px;
+            background: var(--bg-panel);
+            border: 2px solid var(--snake-green);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(46, 204, 113, 0.15);
+            width: 90vw; 
+            max-width: 400px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        .game-card {
-            background: var(--panel-bg);
-            padding: 10px;
-            border-radius: 15px;
-            border: 2px solid var(--green);
-            box-shadow: 0 0 20px rgba(46, 204, 113, 0.2);
-            position: relative;
-            width: 90%;
-            max-width: 400px; /* Constrain width for better mobile view */
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--snake-green);
         }
 
-        h1 {
-            color: var(--green);
-            margin: 10px 0;
-            font-size: 2rem;
-            text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
-            text-align: center;
-        }
-
-        /* --- 3. CANVAS --- */
         canvas {
             background: #000;
-            border: 2px solid #1a4a2e;
+            border: 2px solid #14331e;
             border-radius: 8px;
             display: block;
-            margin: 0 auto;
             width: 100%;
             height: auto;
             aspect-ratio: 1 / 1;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
         }
 
-        /* --- 4. OVERLAYS & UI --- */
-        .header-score {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--green);
-            padding: 0 10px;
-            box-sizing: border-box;
-        }
-
-        .overlay {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 10;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 13px;
-            text-align: center;
-        }
-        .overlay h2 { font-size: 2.5rem; margin-bottom: 10px; color: #e74c3c; }
-        .overlay p { font-size: 1.2rem; margin: 5px 0; }
-
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
+        /* --- 3. UI ELEMENTS --- */
         .btn {
-            background: var(--green);
+            background: var(--snake-green);
             color: #05180b;
             border: none;
-            padding: 10px 25px;
+            padding: 12px 30px;
             font-size: 1rem;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
             text-transform: uppercase;
-            box-shadow: 0 4px 0 var(--dark-green);
-            transition: transform 0.1s;
         }
-        .btn:active { transform: translateY(4px); box-shadow: none; }
-        .btn-pause { background: #e67e22; box-shadow: 0 4px 0 #d35400; color: white; }
+        .btn:active { transform: scale(0.95); }
 
-        /* --- 5. INSTRUCTIONS AREA --- */
-        .info-section {
-            background: #122218;
-            border-radius: 10px;
-            padding: 20px;
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 13, 8, 0.95);
+            border-radius: 13px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .overlay.hidden { display: none; }
+        .overlay h2 { font-size: 2.5rem; margin: 0 0 10px 0; color: var(--snake-green); }
+
+        /* --- 4. ACCURATE JOYSTICK --- */
+        .joystick-container {
             margin-top: 25px;
-            width: 85%;
-            max-width: 500px;
-            border-left: 4px solid var(--green);
-        }
-        
-        .info-section h3 { margin-top: 0; color: var(--green); border-bottom: 1px solid #2ecc7155; padding-bottom: 5px;}
-        .info-section ul { padding-left: 20px; line-height: 1.6; color: #aebfab; }
-        .info-section li strong { color: white; }
-
-        /* --- 6. VIRTUAL JOYSTICK (Mobile Only) --- */
-        .joystick-area {
-            position: relative;
             width: 140px;
             height: 140px;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
             border: 2px solid rgba(46, 204, 113, 0.3);
-            margin: 30px auto 10px auto; /* Centers it below game */
-            display: none; /* Hidden by default on PC */
-            touch-action: none;
+            border-radius: 50%;
+            position: relative;
+            touch-action: none; 
+            display: none; /* Hidden on PC */
         }
-        
+
+        @media (hover: none) and (pointer: coarse) {
+            .joystick-container { display: block; }
+        }
+
         .joystick-knob {
+            width: 50px;
+            height: 50px;
+            background: var(--snake-green);
+            border-radius: 50%;
             position: absolute;
             top: 50%; left: 50%;
-            width: 50px; height: 50px;
-            background: var(--green);
-            border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 15px var(--green);
-            pointer-events: none; /* Let touches pass through to area */
-            transition: transform 0.1s; /* Smooth return to center */
+            box-shadow: 0 0 15px var(--snake-green);
+            pointer-events: none;
+            transition: transform 0.05s linear; 
         }
 
-        /* Show joystick only on touch devices */
-        @media (hover: none) and (pointer: coarse) {
-            .joystick-area { display: block; }
+        /* --- 5. INSTRUCTIONS --- */
+        .instructions {
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #8dafa0;
+            text-align: center;
+            line-height: 1.6;
         }
+        .instructions strong { color: var(--snake-green); }
 
         .back-link {
-            display: inline-block;
-            margin-top: 30px;
-            color: var(--green);
+            margin-top: 20px;
+            color: var(--snake-green);
             text-decoration: none;
+            font-size: 0.9rem;
             opacity: 0.7;
         }
     </style>
 </head>
 <body>
 
-    <h1>RETRO SNAKE</h1>
+    <h1>Retro Snake</h1>
 
     <div class="game-wrapper">
-        <div class="game-card">
-            <div class="header-score">
-                <span id="scoreDisplay">Apples: 0</span>
-                <span id="highScoreDisplay" style="color: #f1c40f;">Best: 0</span>
-            </div>
-
-            <div id="gameOverOverlay" class="overlay">
-                <h2>GAME OVER</h2>
-                <p id="finalScoreText">Score: 0</p>
-                <button class="btn" onclick="startGame()">Try Again 🐍</button>
-            </div>
-            
-            <div id="pauseOverlay" class="overlay" style="background: rgba(0,0,0,0.6);">
-                <h2 style="color:white; font-size: 2rem;">PAUSED</h2>
-                <button class="btn" onclick="togglePause()">Resume</button>
-            </div>
-
-            <canvas id="gameCanvas" width="400" height="400"></canvas>
-
-            <div class="btn-group">
-                <button class="btn" onclick="startGame()">Restart</button>
-                <button class="btn btn-pause" onclick="togglePause()">Pause</button>
-            </div>
+        <div class="score-board">
+            <span id="scoreText">Apples: 0</span>
+            <span id="highScoreText" style="color: #ffd700; opacity: 0.8;">Best: 0</span>
         </div>
 
-        <div class="joystick-area" id="joystickZone">
-            <div class="joystick-knob" id="joystickKnob"></div>
-        </div>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
 
-        <div class="info-section">
-            <h3>How to Play</h3>
-            <ul>
-                <li><strong>PC:</strong> Use Arrow Keys ⬅️⬆️⬇️➡️ to move.</li>
-                <li><strong>Mobile:</strong> Drag the glowing green joystick below the game.</li>
-                <li><strong>Goal:</strong> Eat red apples 🍎 to grow.</li>
-                <li><strong>Avoid:</strong> Do not hit walls or your own tail!</li>
-                <li><strong>Pause:</strong> Press Spacebar or the Pause button.</li>
-            </ul>
+        <div id="gameOverlay" class="overlay">
+            <h2 id="overlayTitle">READY?</h2>
+            <p id="finalScore" style="display:none; color:white; font-size: 1.2rem;">Score: 0</p>
+            <button class="btn" onclick="startGame()">▶ START GAME</button>
         </div>
-
-        <a href="../index.html" class="back-link">← Back to Gaming Hub</a>
     </div>
 
+    <div class="joystick-container" id="joystick">
+        <div class="joystick-knob" id="knob"></div>
+    </div>
+
+    <div class="instructions">
+        <strong>Controls:</strong><br>
+        💻 PC: Arrow Keys<br>
+        📱 Mobile: Use the Joystick below
+    </div>
+
+    <a href="../index.html" class="back-link">← Back to Gaming Hub</a>
+
     <script>
-        // --- 1. SETUP ---
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-
-        // Game Configuration
-        const box = 20; // Size of one grid block
-        const tileCount = 20; // 400px / 20px = 20 tiles
+        // --- 1. CONFIGURATION ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
         
-        // Game State
+        const GRID_SIZE = 20; 
+        const TILE_COUNT = 20; 
+        const GAME_SPEED = 110; 
+        
         let snake = [];
-        let food = {};
-        let direction = "RIGHT";
-        let nextDirection = "RIGHT"; // Buffer to prevent rapid double-turn suicide
-        let gameInterval;
+        let apple = {};
+        let velocity = { x: 0, y: 0 };
+        let nextVelocity = { x: 0, y: 0 };
         let score = 0;
-        let highScore = localStorage.getItem("snakeHighScore") || 0;
-        let isPaused = false;
-        let gameRunning = false;
+        let highScore = localStorage.getItem('snakeHighScore') || 0;
+        let gameInterval;
+        let isGameRunning = false;
 
-        document.getElementById("highScoreDisplay").innerText = "Best: " + highScore;
+        document.getElementById('highScoreText').innerText = "Best: " + highScore;
 
         // --- 2. AUDIO SYSTEM ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
 
-        function initAudio() { 
-            if (!audioCtx) audioCtx = new AudioContext(); 
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new AudioContext();
             if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
 
-        function playTone(freq, type, duration) {
-            if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'eat') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'crash') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            }
         }
 
-        function playSound(event) {
-            initAudio();
-            if (event === 'eat') playTone(600, 'sine', 0.1);
-            if (event === 'turn') playTone(200, 'triangle', 0.05); // Quiet click
-            if (event === 'die') { playTone(150, 'sawtooth', 0.3); setTimeout(()=>playTone(100,'sawtooth',0.4), 200); }
-            if (event === 'start') { playTone(440, 'sine', 0.1); setTimeout(()=>playTone(880,'sine',0.2), 150); }
-        }
-
-        // --- 3. GAME LOGIC ---
+        // --- 3. GAME LOOP ---
         function startGame() {
-            playSound('start');
-            gameRunning = true;
-            isPaused = false;
-            document.getElementById("gameOverOverlay").style.display = "none";
-            document.getElementById("pauseOverlay").style.display = "none";
+            if (!audioCtx) audioCtx = new AudioContext();
+            isGameRunning = true;
+            document.getElementById('gameOverlay').classList.add('hidden');
+            
+            snake = [{x: 10, y: 10}, {x: 9, y: 10}, {x: 8, y: 10}];
+            velocity = { x: 1, y: 0 }; 
+            nextVelocity = { x: 1, y: 0 };
             
             score = 0;
-            document.getElementById("scoreDisplay").innerText = "Apples: 0";
+            document.getElementById('scoreText').innerText = "Apples: 0";
             
-            // Reset Snake Position
-            direction = "RIGHT";
-            nextDirection = "RIGHT";
-            snake = [{ x: 5*box, y: 10*box }, { x: 4*box, y: 10*box }, { x: 3*box, y: 10*box }]; 
-            
-            spawnFood();
+            spawnApple();
             
             if (gameInterval) clearInterval(gameInterval);
-            gameInterval = setInterval(gameLoop, 130); // Game Speed (Lower = Faster)
+            gameInterval = setInterval(update, GAME_SPEED);
         }
 
-        function togglePause() {
-            if (!gameRunning) return;
-            isPaused = !isPaused;
-            if (isPaused) {
-                document.getElementById("pauseOverlay").style.display = "flex";
-            } else {
-                document.getElementById("pauseOverlay").style.display = "none";
-            }
-        }
+        function update() {
+            velocity = { ...nextVelocity };
+            const head = { x: snake[0].x + velocity.x, y: snake[0].y + velocity.y };
 
-        function spawnFood() {
-            food = {
-                x: Math.floor(Math.random() * tileCount) * box,
-                y: Math.floor(Math.random() * tileCount) * box
-            };
-            // Ensure food doesn't spawn inside snake body
-            for(let part of snake) {
-                if(part.x === food.x && part.y === food.y) spawnFood();
-            }
-        }
-
-        function gameLoop() {
-            if (isPaused) return;
-
-            direction = nextDirection; // Update direction at start of frame
-
-            // Calculate new head position
-            let snakeX = snake[0].x;
-            let snakeY = snake[0].y;
-
-            if (direction === "LEFT") snakeX -= box;
-            if (direction === "UP") snakeY -= box;
-            if (direction === "RIGHT") snakeX += box;
-            if (direction === "DOWN") snakeY += box;
-
-            // Wall Collision Check
-            if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height) {
-                gameOver();
-                return;
+            // Wall Collision
+            if (head.x < 0 || head.x >= TILE_COUNT || head.y < 0 || head.y >= TILE_COUNT) {
+                gameOver(); return;
             }
 
-            // Self Collision Check
-            for (let i = 0; i < snake.length; i++) {
-                if (snakeX === snake[i].x && snakeY === snake[i].y) {
-                    gameOver();
-                    return;
+            // Self Collision
+            for (let part of snake) {
+                if (head.x === part.x && head.y === part.y) {
+                    gameOver(); return;
                 }
             }
 
-            // Eating Food
-            if (snakeX === food.x && snakeY === food.y) {
-                score++;
-                document.getElementById("scoreDisplay").innerText = "Apples: " + score;
-                playSound('eat');
-                spawnFood();
-            } else {
-                snake.pop(); // Remove tail
-            }
+            snake.unshift(head); 
 
-            // Add new Head
-            let newHead = { x: snakeX, y: snakeY };
-            snake.unshift(newHead);
+            // Apple Collision
+            if (head.x === apple.x && head.y === apple.y) {
+                score++;
+                document.getElementById('scoreText').innerText = "Apples: " + score;
+                playSound('eat');
+                spawnApple();
+            } else {
+                snake.pop(); 
+            }
 
             draw();
         }
 
         function draw() {
             // Background
-            ctx.fillStyle = "#000";
+            ctx.fillStyle = "black";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Snake
-            for (let i = 0; i < snake.length; i++) {
-                ctx.fillStyle = (i === 0) ? "#2ecc71" : "#27ae60"; // Head is lighter green
-                ctx.beginPath();
-                ctx.roundRect(snake[i].x+1, snake[i].y+1, box-2, box-2, 4);
-                ctx.fill();
-                
-                // Eyes for Head
-                if (i === 0) {
-                    ctx.fillStyle = "black";
-                    if(direction === 'RIGHT') { ctx.fillRect(snake[i].x+12, snake[i].y+4, 4, 4); ctx.fillRect(snake[i].x+12, snake[i].y+12, 4, 4); }
-                    if(direction === 'LEFT') { ctx.fillRect(snake[i].x+4, snake[i].y+4, 4, 4); ctx.fillRect(snake[i].x+4, snake[i].y+12, 4, 4); }
-                    if(direction === 'UP') { ctx.fillRect(snake[i].x+4, snake[i].y+4, 4, 4); ctx.fillRect(snake[i].x+12, snake[i].y+4, 4, 4); }
-                    if(direction === 'DOWN') { ctx.fillRect(snake[i].x+4, snake[i].y+12, 4, 4); ctx.fillRect(snake[i].x+12, snake[i].y+12, 4, 4); }
-                }
-            }
-
-            // Draw Food
-            ctx.fillStyle = "#ff4d6d";
+            // Apple (Red)
+            ctx.fillStyle = "#e74c3c";
             ctx.beginPath();
-            ctx.arc(food.x + box/2, food.y + box/2, box/2 - 2, 0, Math.PI*2);
+            ctx.arc(apple.x * GRID_SIZE + 10, apple.y * GRID_SIZE + 10, 8, 0, Math.PI * 2);
             ctx.fill();
+
+            // Snake
+            snake.forEach((part, index) => {
+                // Head is Bright Green, Body is Darker Green
+                ctx.fillStyle = (index === 0) ? "#2ecc71" : "#27ae60";
+                
+                ctx.beginPath();
+                ctx.roundRect(part.x * GRID_SIZE + 1, part.y * GRID_SIZE + 1, GRID_SIZE - 2, GRID_SIZE - 2, 4);
+                ctx.fill();
+
+                // Eyes
+                if (index === 0) {
+                    ctx.fillStyle = "black";
+                    const x = part.x * GRID_SIZE;
+                    const y = part.y * GRID_SIZE;
+                    // Simple logic to place eyes based on general existence
+                    ctx.fillRect(x + 5, y + 5, 4, 4); 
+                    ctx.fillRect(x + 11, y + 5, 4, 4);
+                }
+            });
+        }
+
+        function spawnApple() {
+            apple = {
+                x: Math.floor(Math.random() * TILE_COUNT),
+                y: Math.floor(Math.random() * TILE_COUNT)
+            };
+            for (let part of snake) {
+                if (part.x === apple.x && part.y === apple.y) spawnApple();
+            }
         }
 
         function gameOver() {
             clearInterval(gameInterval);
-            gameRunning = false;
-            playSound('die');
-            
+            isGameRunning = false;
+            playSound('crash');
+
             if (score > highScore) {
                 highScore = score;
-                localStorage.setItem("snakeHighScore", highScore);
-                document.getElementById("highScoreDisplay").innerText = "Best: " + highScore;
+                localStorage.setItem('snakeHighScore', highScore);
+                document.getElementById('highScoreText').innerText = "Best: " + highScore;
             }
-            
-            document.getElementById("finalScoreText").innerText = "Score: " + score;
-            document.getElementById("gameOverOverlay").style.display = "flex";
+
+            document.getElementById('overlayTitle').innerText = "GAME OVER";
+            document.getElementById('finalScore').innerText = "Score: " + score;
+            document.getElementById('finalScore').style.display = "block";
+            document.getElementById('gameOverlay').classList.remove('hidden');
         }
 
-        // --- 4. CONTROLS (PC & JOYSTICK) ---
-        
-        // PC Keyboard Controls
-        document.addEventListener("keydown", (e) => {
-            // PREVENT SCROLLING for Arrow keys and Spacebar
+        // --- 4. CONTROLS (PC) ---
+        document.addEventListener('keydown', (e) => {
             if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code)) {
                 e.preventDefault(); 
             }
+            if (!isGameRunning) return;
 
-            if (e.code === "Space") { togglePause(); return; }
-            if (!gameRunning || isPaused) return;
-
-            // Logic to prevent 180 degree turns
-            if (e.keyCode == 37 && direction != "RIGHT") nextDirection = "LEFT";
-            else if (e.keyCode == 38 && direction != "DOWN") nextDirection = "UP";
-            else if (e.keyCode == 39 && direction != "LEFT") nextDirection = "RIGHT";
-            else if (e.keyCode == 40 && direction != "UP") nextDirection = "DOWN";
+            switch(e.key) {
+                case 'ArrowUp': 
+                    if (velocity.y === 0) nextVelocity = {x: 0, y: -1}; break;
+                case 'ArrowDown': 
+                    if (velocity.y === 0) nextVelocity = {x: 0, y: 1}; break;
+                case 'ArrowLeft': 
+                    if (velocity.x === 0) nextVelocity = {x: -1, y: 0}; break;
+                case 'ArrowRight': 
+                    if (velocity.x === 0) nextVelocity = {x: 1, y: 0}; break;
+            }
         });
 
-        // JOYSTICK LOGIC
-        const joystickZone = document.getElementById('joystickZone');
-        const joystickKnob = document.getElementById('joystickKnob');
+        // --- 5. HIGH ACCURACY JOYSTICK (ANGLE BASED) ---
+        const joystick = document.getElementById('joystick');
+        const knob = document.getElementById('knob');
         let isDragging = false;
-        let startX, startY;
         
-        // Sensitivity Threshold (Dead Zone)
-        // The knob must move at least this many pixels to trigger a turn
-        const THRESHOLD = 20; 
-
-        joystickZone.addEventListener('touchstart', (e) => {
+        joystick.addEventListener('touchstart', (e) => {
+            if (!isGameRunning) return;
             isDragging = true;
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            // Move knob to touch point immediately
-            updateKnobPosition(e.touches[0].clientX, e.touches[0].clientY);
+            updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
         });
 
-        joystickZone.addEventListener('touchmove', (e) => {
+        joystick.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
-            e.preventDefault(); // Stop screen scrolling while using joystick
-            updateKnobPosition(e.touches[0].clientX, e.touches[0].clientY);
+            e.preventDefault(); 
+            updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
         });
 
-        joystickZone.addEventListener('touchend', () => {
+        joystick.addEventListener('touchend', () => {
             isDragging = false;
-            // Reset knob to center
-            joystickKnob.style.transform = `translate(-50%, -50%)`;
+            knob.style.transform = `translate(-50%, -50%)`; 
         });
 
-        function updateKnobPosition(clientX, clientY) {
-            const rect = joystickZone.getBoundingClientRect();
+        function updateJoystick(touchX, touchY) {
+            const rect = joystick.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
+
+            let deltaX = touchX - centerX;
+            let deltaY = touchY - centerY;
             
-            // Calculate distance from center
-            let deltaX = clientX - centerX;
-            let deltaY = clientY - centerY;
-            
-            // Limit knob movement to radius (50px)
+            // Visual Limit
             const distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-            const maxRadius = 50; 
+            const maxRadius = 40;
             
             if (distance > maxRadius) {
                 const angle = Math.atan2(deltaY, deltaX);
@@ -476,20 +405,26 @@
                 deltaY = Math.sin(angle) * maxRadius;
             }
 
-            // Move the visual knob
-            joystickKnob.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+            knob.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
 
-            // DIRECTION LOGIC WITH DEAD ZONE
-            // Only change direction if moved beyond threshold
-            if (Math.abs(deltaX) > THRESHOLD || Math.abs(deltaY) > THRESHOLD) {
-                if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                    // Horizontal Movement
-                    if (deltaX > 0 && direction != "LEFT") nextDirection = "RIGHT";
-                    if (deltaX < 0 && direction != "RIGHT") nextDirection = "LEFT";
+            // DIRECTION LOGIC (Using Angle for Accuracy)
+            // This prevents "dead zones" in diagonal movement
+            const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+
+            // Right: -45 to 45
+            // Down: 45 to 135
+            // Left: 135 to 180 AND -180 to -135
+            // Up: -135 to -45
+
+            if (distance > 10) { // Slight deadzone to prevent accidental jitter
+                if (angle > -45 && angle <= 45) {
+                    if (velocity.x === 0) nextVelocity = {x: 1, y: 0}; // Right
+                } else if (angle > 45 && angle <= 135) {
+                    if (velocity.y === 0) nextVelocity = {x: 0, y: 1}; // Down
+                } else if (angle > -135 && angle <= -45) {
+                    if (velocity.y === 0) nextVelocity = {x: 0, y: -1}; // Up
                 } else {
-                    // Vertical Movement
-                    if (deltaY > 0 && direction != "UP") nextDirection = "DOWN";
-                    if (deltaY < 0 && direction != "DOWN") nextDirection = "UP";
+                    if (velocity.x === 0) nextVelocity = {x: -1, y: 0}; // Left
                 }
             }
         }
