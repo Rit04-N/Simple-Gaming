@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Duck Rescue | Survival Mode</title>
+    <title>Duck Rescue: Storm Surge</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,22 +11,32 @@
     <div class="main-wrapper">
         <div class="game-column">
             <div class="game-container">
-                <h1 class="game-title">DUCK RESCUE</h1>
+                <div class="top-bar">
+                    <h1 class="game-title">DUCK RESCUE</h1>
+                    <button class="icon-btn settings-trigger" onclick="openSettings()">⚙️</button>
+                </div>
 
                 <div id="statusOverlay" class="overlay">
                     <h1 id="statusTitle">READY?</h1>
+                    <p id="waveInfo" style="color: #f1c40f; font-size: 1.2rem; margin-bottom: 10px;">Wave 1: Rescue 3 Ducks</p>
                     <p id="highScoreText">High Score: 0</p>
-                    <p id="finalDeathText" style="font-size: 0.9rem; color: #e74c3c; display: none;"></p>
-                    <button class="btn start-btn" onclick="startGame()">▶ START GAME</button>
+                    <p id="finalDeathText" class="death-text"></p>
+                    <button class="btn start-btn" onclick="startGame()">▶ START WAVE 1</button>
                 </div>
 
-                <div class="header">
-                    <div class="stat-box">Saved: <span id="scoreDisplay">0</span></div>
-                    <div class="stat-box">Best: <span id="highScoreDisplay">0</span></div>
+                <div id="levelUpOverlay" class="overlay" style="background: rgba(46, 204, 113, 0.9); display: none;">
+                    <h1>WAVE COMPLETE!</h1>
+                    <p>Get ready for harder waters...</p>
+                </div>
+
+                <div class="hud-grid">
+                    <div class="hud-box">Wave: <span id="levelDisplay">1</span></div>
+                    <div class="hud-box target-box">Target: <span id="savedDisplay">0</span>/<span id="targetDisplay">3</span></div>
+                    <div class="hud-box score-box">Score: <span id="scoreDisplay">0</span></div>
                 </div>
 
                 <div class="sub-header">
-                    <div class="lives-box">Lives: <span id="livesDisplay">❤❤❤❤❤</span></div>
+                    <div class="lives-box" id="livesDisplay">❤❤❤❤❤</div>
                     <div class="death-box">Casualties: <span id="deathDisplay">0</span> 💀</div>
                 </div>
 
@@ -41,16 +51,41 @@
                 </div>
             </div>
 
-            <div class="mobile-controls">
+            <div id="settingsModal" class="settings-modal">
+                <div class="settings-content">
+                    <h2>⚙️ SETTINGS</h2>
+                    
+                    <div class="setting-row">
+                        <label>Control Type:</label>
+                        <div class="toggle-group">
+                            <button class="toggle-btn active" id="btnJoystick" onclick="setControlType('joystick')">Joystick</button>
+                            <button class="toggle-btn" id="btnDpad" onclick="setControlType('dpad')">D-Pad</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-row" id="sensitivityRow">
+                        <label>Joystick Sensitivity:</label>
+                        <input type="range" id="sensSlider" min="10" max="60" value="30" oninput="updateSens(this.value)">
+                        <span id="sensValue">30</span>
+                    </div>
+
+                    <div class="setting-row">
+                        <label>Sound Effects:</label>
+                        <button class="toggle-btn active" id="btnSound" onclick="toggleSound()">ON</button>
+                    </div>
+
+                    <button class="btn close-btn" onclick="closeSettings()">SAVE & CLOSE</button>
+                </div>
+            </div>
+
+            <div id="dpadContainer" class="mobile-controls" style="display: none;">
                 <div class="d-pad-grid">
                     <button class="d-btn diag" data-key="UL">◤</button>
                     <button class="d-btn" data-key="UP">▲</button>
                     <button class="d-btn diag" data-key="UR">◥</button>
-                    
                     <button class="d-btn" data-key="LEFT">◀</button>
                     <button class="d-btn center-boost" data-key="BOOST">🚀</button>
                     <button class="d-btn" data-key="RIGHT">▶</button>
-                    
                     <button class="d-btn diag" data-key="DL">◣</button>
                     <button class="d-btn" data-key="DOWN">▼</button>
                     <button class="d-btn diag" data-key="DR">◢</button>
@@ -59,17 +94,17 @@
         </div>
 
         <div class="info-panel">
-            <h3 style="margin-top:0; color:#f1c40f;">Mission Briefing</h3>
-            <p><strong>PC Controls:</strong><br>Arrows or WASD to Swim.<br>Hold two keys to move diagonally.<br>SPACE to Boost.</p>
-            <p><strong>Mobile Controls:</strong><br>Use the D-Pad below the game.<br>Center button to Boost.</p>
+            <h3 style="margin-top:0; color:#f1c40f;">MISSION OBJECTIVES</h3>
+            <p><strong>The Storm is Coming!</strong><br>Rescue the required number of ducklings to escape the storm. Each wave brings more predators.</p>
             <hr>
-            <p>🐊 <strong>The Crocodile:</strong><br>Eating Mama = Lose 1 Life.<br>Touching Line = Cuts off & eats babies!</p>
-            <p>🐟 <strong>The Pike:</strong><br>Scares babies away (they get lost).</p>
-            <p>🪺 <strong>Goal:</strong><br>Guide the babies to the nest.</p>
-            
-            <div style="margin-top: auto;">
-                 <a href="../index.html" class="back-link">← Back to Hub</a>
+            <p>🐊 <strong>Crocodile:</strong> Cuts the line! If it touches your trail, you lose every baby behind that point.</p>
+            <p>🐟 <strong>Pike:</strong> Scares babies away.</p>
+            <hr>
+            <div class="key-guide">
+                <p><strong>PC:</strong> Arrows/WASD + Space</p>
+                <p><strong>Mobile:</strong> Configure in Settings ⚙️</p>
             </div>
+            <a href="../index.html" class="back-link">← Back to Hub</a>
         </div>
     </div>
     
