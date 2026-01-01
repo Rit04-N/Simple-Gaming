@@ -111,13 +111,13 @@
         .start-btn { background: var(--nest-green); box-shadow: 0 4px 0 #219150; }
         .pause-btn { background: #95a5a6; width: 100%; padding: 12px; color: #2c3e50;}
 
-        /* --- JOYSTICK BOOST BUTTON (Bottom Right) --- */
+        /* --- JOYSTICK BOOST BUTTON --- */
         .joystick-boost-btn {
             position: absolute; bottom: 30px; right: 20px;
             width: 70px; height: 70px; border-radius: 50%;
             background: rgba(231, 76, 60, 0.8); border: 3px solid rgba(255,255,255,0.5);
             color: white; font-weight: bold; font-size: 0.9rem;
-            display: none; /* Hidden by default, shown by JS */
+            display: none; 
             justify-content: center; align-items: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.4);
             z-index: 40; cursor: pointer;
@@ -273,20 +273,19 @@
 
         <div class="info-panel">
             <h3>MISSION BRIEFING</h3>
-            <p><strong>The Storm is Coming!</strong><br>Rescue ducklings to escape. Watch the Wave descriptions!</p>
+            <p><strong>The Storm is Coming!</strong><br>Rescue ducklings to escape.</p>
             <hr style="border-color: #444;">
-            <p>🐊 <strong>Crocodile:</strong> Cuts the line! Lose everyone behind the cut.</p>
-            <p>🐟 <strong>Pike:</strong> Scares babies away.</p>
+            <p>🐊 <strong>Crocodile:</strong><br><span style="color:#e74c3c">DANGER!</span> Eats you AND babies.</p>
+            <p>🐟 <strong>Pike:</strong><br><span style="color:#f1c40f">HARMLESS TO YOU.</span> Only scares babies away.</p>
             <a href="../index.html" class="back-link">← Back to Gaming Hub</a>
         </div>
     </div>
 
     <script>
-        // --- WAVE DESCRIPTIONS ---
         const WAVE_TEXT = {
             1: "Safe tutorial. Learn to swim and rescue.",
-            2: "Learn to dodge the Pike! (It scares babies).",
-            3: "High stakes introduced! (Avoid the Croc).",
+            2: "Learn to dodge the Pike! (Harmless to you, bad for babies).",
+            3: "High stakes! (Croc eats YOU and babies).",
             4: "More ducklings to find...",
             5: "Reflex testing! (Two Crocodiles).",
             6: "The waters are getting crowded...",
@@ -305,9 +304,6 @@
 
         const SETTINGS = {
             controlType: getStoredSetting('duckControl', 'joystick'),
-            // "Sensitivity" here basically means "Radius required to hit max speed"
-            // So Lower Number = Higher Sensitivity (less movement needed)
-            // But we display it as 10-60 to user. We handle logic in update().
             sensitivity: parseInt(getStoredSetting('duckSens', '30')) || 30,
             soundOn: true
         };
@@ -399,7 +395,6 @@
             spawnBaby();
             updateUI();
             
-            // Show Overlay for new Wave Info only if resuming or start (handled by UI mostly)
             if (lvl > 1) {
                 SoundManager.play('levelup');
                 document.getElementById("levelUpOverlay").style.display = "flex";
@@ -409,11 +404,7 @@
 
         function checkWaveProgress() {
             if (gameState.ducksSavedInWave >= gameState.targetForWave) {
-                // Prepare Text for NEXT wave
                 const nextLvl = gameState.level + 1;
-                const txt = WAVE_TEXT[nextLvl] || "Survive the storm!";
-                
-                // We don't show the pause screen, we just show the green Level Up flash
                 startWave(nextLvl);
             }
         }
@@ -432,8 +423,6 @@
                 my = joystick.dy;
             }
 
-            // BOOST LOGIC
-            // Joystick button OR Space bar
             let currentSpeed = mama.baseSpeed;
             if (isBoosting && gameState.boost > 0) {
                 currentSpeed = mama.boostSpeed;
@@ -445,7 +434,7 @@
             document.getElementById("boostBar").style.width = gameState.boost + "%";
 
             if (mx !== 0 || my !== 0) {
-                if (!joystick.active) { // Normalize keyboard
+                if (!joystick.active) { 
                     let len = Math.sqrt(mx*mx + my*my);
                     if (len > 0) { mx /= len; my /= len; }
                 }
@@ -459,14 +448,22 @@
             history.unshift({x: mama.x, y: mama.y});
             if (history.length > 300) history.pop();
 
-            // Enemies
             enemies.forEach(e => {
                 e.x += e.speed;
                 if (e.speed > 0 && e.x > 450) { e.x = -50; e.y = 50 + Math.random()*300; }
                 if (e.speed < 0 && e.x < -100) { e.x = 500; e.y = 50 + Math.random()*300; }
                 
-                if (Math.hypot(mama.x - e.x, mama.y - e.y) < 30) { SoundManager.play('crunch'); loseLife(); }
+                // MAMA COLLISION CHECK
+                if (Math.hypot(mama.x - e.x, mama.y - e.y) < 30) { 
+                    if (e.type === 'croc') {
+                        // CROC EATS MAMA
+                        SoundManager.play('crunch'); 
+                        loseLife(); 
+                    }
+                    // PIKE DOES NOTHING TO MAMA (ignored)
+                }
 
+                // DUCKLING COLLISION CHECK (Both Croc and Pike affect babies)
                 for (let i = 0; i < ducklings.length; i++) {
                     let idx = (i+1)*14;
                     if (history[idx]) {
@@ -476,6 +473,7 @@
                                 gameState.deadDucklings += (ducklings.length - i);
                                 ducklings.splice(i); updateUI(); break;
                             } else {
+                                // Pike just scares/removes them
                                 ducklings.splice(i); break;
                             }
                         }
@@ -570,7 +568,6 @@
             if(gameState.paused) {
                 document.getElementById("statusTitle").innerText = "PAUSED";
                 document.getElementById("waveTitle").innerText = "Wave " + gameState.level;
-                // Show current wave objective in pause
                 document.getElementById("waveDesc").innerText = WAVE_TEXT[gameState.level] || "";
                 document.getElementById("finalDeathText").innerText = "";
                 const btn = document.querySelector(".start-btn");
@@ -578,7 +575,6 @@
             } else loop();
         }
 
-        // --- SETTINGS & INPUTS ---
         function openSettings() { if(gameState.active && !gameState.paused) togglePause(); document.getElementById("settingsModal").style.display = "flex"; applySettings(); }
         function closeSettings() { document.getElementById("settingsModal").style.display = "none"; }
         function setControlType(type) { SETTINGS.controlType = type; localStorage.setItem('duckControl', type); applySettings(); }
@@ -593,7 +589,6 @@
             document.getElementById("btnSound").classList.toggle('active', SETTINGS.soundOn);
             document.getElementById("btnSound").innerText = SETTINGS.soundOn ? "ON" : "OFF";
             document.getElementById("dpadContainer").style.display = SETTINGS.controlType === 'dpad' ? 'flex' : 'none';
-            // Show/Hide Joystick Boost Button
             document.getElementById("joyBoostBtn").style.display = (SETTINGS.controlType === 'joystick' && gameState.active) ? 'flex' : 'none';
         }
 
@@ -603,7 +598,6 @@
         });
         window.addEventListener("keyup", (e) => { keys[e.code] = false; if(e.code === "Space") isBoosting = false; });
 
-        // JOYSTICK
         canvas.addEventListener("touchstart", (e) => {
             if (SETTINGS.controlType !== 'joystick' || !gameState.active || gameState.paused) return;
             e.preventDefault();
@@ -629,10 +623,6 @@
             joystick.stickX = joystick.baseX + Math.cos(angle) * limit;
             joystick.stickY = joystick.baseY + Math.sin(angle) * limit;
 
-            // SENSITIVITY MATH:
-            // High slider value (60) = small denominator = High Sensitivity (reaches 1.0 force quickly)
-            // Low slider value (10) = large denominator = Low Sensitivity
-            // We use (70 - value) to flip logic for math, but keep UI intuitive (High = Fast)
             const sensFactor = 70 - SETTINGS.sensitivity; 
             const force = Math.min(dist / sensFactor, 1);
             
@@ -644,12 +634,10 @@
             joystick.active = false; joystick.dx = 0; joystick.dy = 0;
         });
 
-        // JOYSTICK BOOST BTN
         const boostBtn = document.getElementById("joyBoostBtn");
         boostBtn.addEventListener("touchstart", (e)=>{ e.preventDefault(); isBoosting=true; joystick.boostHeld=true; });
         boostBtn.addEventListener("touchend", (e)=>{ e.preventDefault(); isBoosting=false; joystick.boostHeld=false; });
 
-        // D-PAD
         document.querySelectorAll('.d-btn').forEach(btn => {
             const start = (e) => {
                 if(!gameState.active) return;
