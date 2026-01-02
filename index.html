@@ -23,13 +23,13 @@
             color: #ff4d6d; 
             text-shadow: 0 0 25px rgba(255, 77, 109, 0.6); 
             font-size: 4rem; 
-            margin-bottom: 30px; /* Reduced slightly for mobile layout */
+            margin-bottom: 30px; 
             letter-spacing: 2px;
             position: relative;
             z-index: 2;
         }
 
-        /* --- 2. PC BACKGROUND DANCERS (Hidden on Mobile) --- */
+        /* --- 2. PC BACKGROUND DANCERS --- */
         .bg-dancer {
             position: fixed;
             bottom: 180px; 
@@ -42,9 +42,9 @@
         .giraffe-left { left: 2%; animation: pulse-dance 2s infinite alternate ease-in-out; }
         .bee-right { right: 2%; animation: pulse-dance-flipped 2s infinite alternate ease-in-out; }
 
-        /* --- 3. MOBILE DANCERS (Hidden on PC) --- */
+        /* --- 3. MOBILE DANCERS --- */
         .mobile-dancer {
-            display: none; /* Hidden by default */
+            display: none; 
             width: 120px;
             height: auto;
             margin: 20px auto;
@@ -79,6 +79,45 @@
             align-items: center;
         }
 
+        /* --- NEW: LEVEL TAG STYLES --- */
+        .level-tag {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-bottom: 15px; /* Separation from card */
+            padding: 5px 20px;
+            border: 2px solid;
+            border-radius: 50px;
+            text-transform: uppercase;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(2px);
+        }
+
+        /* Level 1 Color (Pink) */
+        .lvl-1 {
+            color: #ff4d6d;
+            border-color: #ff4d6d;
+            box-shadow: 0 0 15px rgba(255, 77, 109, 0.2);
+            text-shadow: 0 0 10px rgba(255, 77, 109, 0.5);
+        }
+
+        /* Level 2 Color (Green) */
+        .lvl-2 {
+            color: #2ecc71;
+            border-color: #2ecc71;
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.2);
+            text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+        }
+
+        /* Level 3 Color (Blue) */
+        .lvl-3 {
+            color: #3498db;
+            border-color: #3498db;
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        /* --- CARD STYLES --- */
         .card { 
             border: 3px solid #ff4d6d; 
             padding: 50px 25px; 
@@ -120,7 +159,6 @@
             .grid { gap: 40px; margin-top: 10px; }
             .card { width: 85vw; padding: 40px 20px; }
             
-            /* Hide PC dancers, Show Mobile dancers */
             .bg-dancer { display: none; }
             .mobile-dancer { display: block; }
         }
@@ -137,6 +175,7 @@
     
     <div class="grid">
         <div class="card-group">
+            <div class="level-tag lvl-1">LEVEL 1</div>
             <a href="bunny-run/index.html" class="card bunny-card">
                 <span>🐰</span>
                 <h2>Carrots</h2>
@@ -145,6 +184,7 @@
         </div>
 
         <div class="card-group">
+            <div class="level-tag lvl-2">LEVEL 2</div>
             <a href="snake-game/index.html" class="card snake-card">
                 <span>🐍</span>
                 <h2>Retro Snake</h2>
@@ -153,6 +193,7 @@
         </div>
 
         <div class="card-group">
+            <div class="level-tag lvl-3">LEVEL 3</div>
             <a href="duck-rescue/index.html" class="card duck-card">
                 <span>🦢</span>
                 <h2>Duck Rescue</h2>
