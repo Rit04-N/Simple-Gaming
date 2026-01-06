@@ -29,6 +29,39 @@
             z-index: 2;
         }
 
+        /* --- LOGIN BUTTON STYLES --- */
+        #user-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .login-btn {
+            background: rgba(255, 77, 109, 0.2);
+            border: 2px solid #ff4d6d;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            text-decoration: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .login-btn:hover {
+            background: #ff4d6d;
+            box-shadow: 0 0 15px #ff4d6d;
+        }
+
+        #user-status {
+            font-size: 0.9rem;
+            color: #ff4d6d;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
         /* --- 2. PC BACKGROUND DANCERS --- */
         .bg-dancer {
             position: fixed;
@@ -132,6 +165,7 @@
             align-items: center;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
             backdrop-filter: blur(5px);
+            cursor: pointer; /* Added pointer to show it's clickable */
         }
 
         .card span { font-size: 4rem !important; margin-bottom: 20px; }
@@ -161,10 +195,19 @@
             
             .bg-dancer { display: none; }
             .mobile-dancer { display: block; }
+            
+            #user-panel { top: 10px; right: 10px; }
+            .login-btn { padding: 5px 10px; font-size: 0.8rem; }
         }
     </style>
 </head>
 <body>
+
+    <div id="user-panel">
+        <span id="user-status"></span>
+        <button id="login-btn" class="login-btn" onclick="signInWithGithub()">Login with GitHub</button>
+        <button id="logout-btn" class="login-btn" onclick="signOut()" style="display:none;">Logout</button>
+    </div>
 
     <img src="Girafffee.gif" class="bg-dancer giraffe-left" alt="Giraffe">
     <img src="dance.gif" class="bg-dancer bee-right" alt="Flamingo">
@@ -176,29 +219,29 @@
     <div class="grid">
         <div class="card-group">
             <div class="level-tag lvl-1">LEVEL 1</div>
-            <a href="bunny-run/index.html" class="card bunny-card">
+            <div onclick="playGame('Bunny Run', 'bunny-run/index.html')" class="card bunny-card">
                 <span>🐰</span>
                 <h2>Carrots</h2>
                 <p>Collect carrots and avoid the cacti!</p>
-            </a>
+            </div>
         </div>
 
         <div class="card-group">
             <div class="level-tag lvl-2">LEVEL 2</div>
-            <a href="snake-game/index.html" class="card snake-card">
+            <div onclick="playGame('Retro Snake', 'snake-game/index.html')" class="card snake-card">
                 <span>🐍</span>
                 <h2>Retro Snake</h2>
                 <p>Eat the apples and grow as long as you can!</p>
-            </a>
+            </div>
         </div>
 
         <div class="card-group">
             <div class="level-tag lvl-3">LEVEL 3</div>
-            <a href="duck-rescue/index.html" class="card duck-card">
+            <div onclick="playGame('Duck Rescue', 'duck-rescue/index.html')" class="card duck-card">
                 <span>🦢</span>
                 <h2>Duck Rescue</h2>
                 <p>Lead the babies to the nest! Avoid the 🐟!</p>
-            </a>
+            </div>
         </div>
     </div>
 
@@ -208,5 +251,78 @@
         Select a game to begin your adventure.
     </p>
 
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // 1. CONFIGURE SUPABASE
+        // I decoded your key to find your unique project URL: xofnyivmeqlatqetnqqi
+        const supabaseUrl = 'https://xofnyivmeqlatqetnqqi.supabase.co';
+        
+        // This is the specific key you provided
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvZm55aXZtZXFsYXRxZXRucXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MDg1OTksImV4cCI6MjA4MzI4NDU5OX0.VYi4BKbEMhBqI5wbPIASpXhMXJu5PIC1ueMxaivcuHE';
+        
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // 2. CHECK LOGIN STATUS ON LOAD
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const statusSpan = document.getElementById('user-status');
+
+            if (user) {
+                // User is logged in
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                statusSpan.textContent = "Welcome!"; // Can't show name easily with generic GitHub auth without extra steps, keeping it simple
+            } else {
+                // User is not logged in
+                loginBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+            }
+        }
+        
+        // Run check on page load
+        checkUser();
+
+        // 3. LOGIN FUNCTION
+        async function signInWithGithub() {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'github',
+            });
+        }
+
+        // 4. LOGOUT FUNCTION
+        async function signOut() {
+            const { error } = await supabase.auth.signOut();
+            window.location.reload();
+        }
+
+        // 5. GAME TRACKING FUNCTION
+        async function playGame(gameName, url) {
+            // A. Get current user info (if any)
+            const { data: { user } } = await supabase.auth.getUser();
+            const userEmail = user ? user.email : 'Anonymous Guest';
+
+            // B. Send data to Supabase
+            // Note: You must create a table named 'activity_log' in Supabase for this to work!
+            const { error } = await supabase
+                .from('activity_log')
+                .insert([
+                    { 
+                        game_name: gameName, 
+                        user_email: userEmail,
+                        timestamp: new Date()
+                    }
+                ]);
+
+            if (error) {
+                console.log('Tracking Error:', error);
+            }
+
+            // C. Go to the game
+            window.location.href = url;
+        }
+    </script>
 </body>
 </html>
